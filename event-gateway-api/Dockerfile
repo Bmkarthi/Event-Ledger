@@ -2,10 +2,10 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-# Copy parent pom and install
-COPY ../pom.xml /app/pom.xml
-COPY ../common /app/common
-COPY . /app/event-gateway-api
+# Copy parent pom and modules
+COPY pom.xml /app/pom.xml
+COPY common /app/common
+COPY event-gateway-api /app/event-gateway-api
 
 RUN mvn -q clean package -DskipTests -pl event-gateway-api -am
 

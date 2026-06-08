@@ -2,10 +2,10 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-# Copy parent pom and install
-COPY ../pom.xml /app/pom.xml
-COPY ../common /app/common
-COPY . /app/account-service
+# Copy parent pom and modules
+COPY pom.xml /app/pom.xml
+COPY common /app/common
+COPY account-service /app/account-service
 
 RUN mvn -q clean package -DskipTests -pl account-service -am
 
