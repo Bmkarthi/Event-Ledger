@@ -1,6 +1,7 @@
 package com.eventledger.gateway.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.util.Map;
 

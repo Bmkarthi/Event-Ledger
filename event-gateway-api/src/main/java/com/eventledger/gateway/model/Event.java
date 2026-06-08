@@ -1,6 +1,7 @@
-package com.eventledger.gateway.domain;
+package com.eventledger.gateway.model;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
