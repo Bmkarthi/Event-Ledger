@@ -46,7 +46,9 @@ public class AccountServiceIntegrationTest {
 
         assertEquals(HttpStatus.OK, balanceResponse.getStatusCode());
         assertNotNull(balanceResponse.getBody());
-        assertEquals(500.0, balanceResponse.getBody().get("balance"));
+        Object balanceObj = balanceResponse.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(500.0, ((Number) balanceObj).doubleValue());
     }
 
     @Test
@@ -75,7 +77,9 @@ public class AccountServiceIntegrationTest {
         ResponseEntity<Map> balanceResponse = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 
-        assertEquals(120.0, balanceResponse.getBody().get("balance"));
+        Object balanceObj = balanceResponse.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(120.0, ((Number) balanceObj).doubleValue());
     }
 
     @Test
@@ -101,7 +105,9 @@ public class AccountServiceIntegrationTest {
         ResponseEntity<Map> balanceResponse = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 
-        assertEquals(100.0, balanceResponse.getBody().get("balance"));
+        Object balanceObj = balanceResponse.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(100.0, ((Number) balanceObj).doubleValue());
     }
 
     @Test
@@ -121,7 +127,9 @@ public class AccountServiceIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(accountId, response.getBody().get("accountId"));
-        assertEquals(250.0, response.getBody().get("balance"));
+        Object balanceObj = response.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(250.0, ((Number) balanceObj).doubleValue());
         assertEquals(1, response.getBody().get("transactionCount"));
     }
 
@@ -139,7 +147,9 @@ public class AccountServiceIntegrationTest {
             "/accounts/acct-nonexistent/balance", Map.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(0.0, response.getBody().get("balance"));
+        Object balanceObj = response.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(0.0, ((Number) balanceObj).doubleValue());
     }
 
     @Test
@@ -163,7 +173,9 @@ public class AccountServiceIntegrationTest {
             "/accounts/" + accountId + "/balance", Map.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(-50.0, response.getBody().get("balance"));
+        Object balanceObj = response.getBody().get("balance");
+        assertTrue(balanceObj instanceof Number);
+        assertEquals(-50.0, ((Number) balanceObj).doubleValue());
     }
 }
 

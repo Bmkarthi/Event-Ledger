@@ -1,10 +1,10 @@
 package com.eventledger.gateway.service;
 
-import com.eventledger.gateway.domain.Event;
+import com.eventledger.gateway.client.AccountServiceClient;
 import com.eventledger.gateway.dto.EventRequest;
 import com.eventledger.gateway.dto.EventResponse;
+import com.eventledger.gateway.model.Event;
 import com.eventledger.gateway.repository.EventRepository;
-import com.eventledger.gateway.client.AccountServiceClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +14,15 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
