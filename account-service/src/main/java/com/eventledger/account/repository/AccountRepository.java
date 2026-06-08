@@ -1,6 +1,6 @@
 package com.eventledger.account.repository;
 
-import com.eventledger.account.domain.Account;
+import com.eventledger.account.model.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

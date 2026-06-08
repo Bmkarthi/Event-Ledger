@@ -1,6 +1,6 @@
 package com.eventledger.account.repository;
 
-import com.eventledger.account.domain.Transaction;
+import com.eventledger.account.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

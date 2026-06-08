@@ -1,11 +1,10 @@
 package com.eventledger.account.controller;
 
-import com.eventledger.account.domain.Account;
-import com.eventledger.account.domain.Transaction;
 import com.eventledger.account.dto.TransactionRequest;
+import com.eventledger.account.model.Account;
+import com.eventledger.account.model.Transaction;
 import com.eventledger.account.service.AccountService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.eventledger.common.logging.StructuredLogger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,14 +13,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST API endpoint for account management
- */
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
+    private static final String SERVICE_NAME = "account-service";
 
     private final AccountService accountService;
 
@@ -29,9 +25,6 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    /**
-     * POST /accounts/{accountId}/transactions - Apply a transaction to an account
-     */
     @PostMapping("/{accountId}/transactions")
     public ResponseEntity<?> applyTransaction(@PathVariable String accountId,
                                               @RequestBody TransactionRequest request,
@@ -41,25 +34,29 @@ public class AccountController {
         }
 
         final String finalTraceId = traceId;
-        logger.info("POST /accounts/{}/transactions - Applying transaction [traceId={}]", accountId, finalTraceId);
+        StructuredLogger.logInfo(SERVICE_NAME, "POST /accounts - Applying transaction", finalTraceId,
+            Map.of("accountId", accountId, "idempotencyKey", request.getIdempotencyKey()));
 
         try {
             accountService.applyTransaction(accountId, request, finalTraceId);
-            logger.info("POST /accounts/{}/transactions - Transaction applied successfully [traceId={}]", accountId, finalTraceId);
+            StructuredLogger.logInfo(SERVICE_NAME, "Transaction applied successfully", finalTraceId,
+                Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.OK).body(Map.of(
                 "status", "SUCCESS",
                 "accountId", accountId,
                 "traceId", finalTraceId
             ));
         } catch (AccountService.TransactionApplicationException e) {
-            logger.error("POST /accounts/{}/transactions - Transaction failed [traceId={}]: {}", accountId, finalTraceId, e.getMessage());
+            StructuredLogger.logError(SERVICE_NAME, "Transaction failed: " + e.getMessage(), finalTraceId,
+                Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "error", "Transaction failed",
                 "message", e.getMessage(),
                 "traceId", finalTraceId
             ));
         } catch (Exception e) {
-            logger.error("POST /accounts/{}/transactions - Unexpected error [traceId={}]", accountId, finalTraceId, e);
+            StructuredLogger.logError(SERVICE_NAME, "Unexpected error: " + e.getMessage(), finalTraceId,
+                Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "error", "Internal server error",
                 "message", e.getMessage(),
@@ -68,9 +65,6 @@ public class AccountController {
         }
     }
 
-    /**
-     * GET /accounts/{accountId}/balance - Get the current balance
-     */
     @GetMapping("/{accountId}/balance")
     public ResponseEntity<?> getBalance(@PathVariable String accountId,
                                         @RequestHeader(value = "X-Trace-ID", required = false) String traceId) {
@@ -79,7 +73,8 @@ public class AccountController {
         }
 
         final String finalTraceId = traceId;
-        logger.info("GET /accounts/{}/balance - Retrieving balance [traceId={}]", accountId, finalTraceId);
+        StructuredLogger.logInfo(SERVICE_NAME, "GET /accounts - Retrieving balance", finalTraceId,
+            Map.of("accountId", accountId));
 
         try {
             BigDecimal balance = accountService.getBalance(accountId, finalTraceId);
@@ -89,7 +84,8 @@ public class AccountController {
                 "traceId", finalTraceId
             ));
         } catch (Exception e) {
-            logger.error("GET /accounts/{}/balance - Error [traceId={}]", accountId, finalTraceId, e);
+            StructuredLogger.logError(SERVICE_NAME, "Error retrieving balance: " + e.getMessage(), finalTraceId,
+                Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "error", "Internal server error",
                 "message", e.getMessage(),
@@ -98,9 +94,6 @@ public class AccountController {
         }
     }
 
-    /**
-     * GET /accounts/{accountId} - Get account details
-     */
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccount(@PathVariable String accountId,
                                         @RequestHeader(value = "X-Trace-ID", required = false) String traceId) {
@@ -109,7 +102,8 @@ public class AccountController {
         }
 
         final String finalTraceId = traceId;
-        logger.info("GET /accounts/{} - Retrieving account details [traceId={}]", accountId, finalTraceId);
+        StructuredLogger.logInfo(SERVICE_NAME, "GET /accounts - Retrieving account details", finalTraceId,
+            Map.of("accountId", accountId));
 
         try {
             Account account = accountService.getAccount(accountId, finalTraceId);
@@ -124,14 +118,15 @@ public class AccountController {
                 "traceId", finalTraceId
             ));
         } catch (AccountService.AccountNotFoundException e) {
-            logger.warn("GET /accounts/{} - Account not found [traceId={}]", accountId, finalTraceId);
+            StructuredLogger.logInfo(SERVICE_NAME, "Account not found", finalTraceId, Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                 "error", "Account not found",
                 "accountId", accountId,
                 "traceId", finalTraceId
             ));
         } catch (Exception e) {
-            logger.error("GET /accounts/{} - Error [traceId={}]", accountId, finalTraceId, e);
+            StructuredLogger.logError(SERVICE_NAME, "Error retrieving account: " + e.getMessage(), finalTraceId,
+                Map.of("accountId", accountId));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "error", "Internal server error",
                 "message", e.getMessage(),
@@ -140,11 +135,9 @@ public class AccountController {
         }
     }
 
-    /**
-     * GET /health - Health check
-     */
     @GetMapping("/health")
     public ResponseEntity<?> health() {
+        StructuredLogger.logInfo(SERVICE_NAME, "Health check", null, null);
         return ResponseEntity.ok(Map.of(
             "status", "UP",
             "service", "account-service",
