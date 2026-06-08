@@ -8,17 +8,17 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Structured logging utility for JSON-formatted logs with trace context.
- */
 @Component
 public class StructuredLogger {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    // Delay ObjectMapper creation until first use to avoid any static-init issues
+    private static class ObjectMapperHolder {
+        static final ObjectMapper INSTANCE = new ObjectMapper();
+    }
+    private static ObjectMapper getObjectMapper() {
+        return ObjectMapperHolder.INSTANCE;
+    }
 
-    /**
-     * Log a structured message with context
-     */
     public static void logStructured(String serviceName, String level, String message, String traceId, Map<String, Object> context) {
         Map<String, Object> logEntry = new HashMap<>();
         logEntry.put("timestamp", Instant.now().toString());
@@ -32,32 +32,25 @@ public class StructuredLogger {
         }
 
         try {
-            System.out.println(objectMapper.writeValueAsString(logEntry));
+            System.out.println(getObjectMapper().writeValueAsString(logEntry));
         } catch (Exception e) {
             System.out.println("{\"timestamp\":\"" + Instant.now() + "\",\"level\":\"ERROR\",\"message\":\"Failed to serialize log\"}");
         }
 
-        // Also set MDC for traditional logging
-        MDC.put("traceId", traceId);
+        // Also set MDC for traditional logging (only if traceId is present)
+        if (traceId != null) {
+            MDC.put("traceId", traceId);
+        }
     }
 
-    /**
-     * Convenience method for info level
-     */
     public static void logInfo(String serviceName, String message, String traceId, Map<String, Object> context) {
         logStructured(serviceName, "INFO", message, traceId, context);
     }
 
-    /**
-     * Convenience method for error level
-     */
     public static void logError(String serviceName, String message, String traceId, Map<String, Object> context) {
         logStructured(serviceName, "ERROR", message, traceId, context);
     }
 
-    /**
-     * Clear MDC
-     */
     public static void clearContext() {
         MDC.clear();
     }
