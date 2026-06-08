@@ -1,10 +1,7 @@
 package com.eventledger.gateway.config;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.core.registry.EntryAddedEvent;
-import io.github.resilience4j.core.registry.RegistryEventConsumer;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
@@ -17,9 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
-/**
- * Configuration for resilience patterns (circuit breaker, retry, timeout)
- */
 @Configuration
 public class ResilienceConfig {
 
@@ -30,9 +24,6 @@ public class ResilienceConfig {
         return new RestTemplate();
     }
 
-    /**
-     * Configure circuit breaker for Account Service
-     */
     @Bean
     public CircuitBreakerRegistry circuitBreakerRegistry() {
         CircuitBreakerConfig defaultConfig = CircuitBreakerConfig.custom()
@@ -53,9 +44,6 @@ public class ResilienceConfig {
         return registry;
     }
 
-    /**
-     * Configure retry policy
-     */
     @Bean
     public RetryRegistry retryRegistry() {
         RetryConfig defaultConfig = RetryConfig.custom()
@@ -72,9 +60,6 @@ public class ResilienceConfig {
         return registry;
     }
 
-    /**
-     * Configure time limiter
-     */
     @Bean
     public TimeLimiterRegistry timeLimiterRegistry() {
         TimeLimiterConfig defaultConfig = TimeLimiterConfig.custom()
