@@ -36,7 +36,6 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionStatus status = TransactionStatus.SUCCESS;
 
-    // Constructors
     public Transaction() {
     }
 
@@ -50,7 +49,6 @@ public class Transaction {
         this.createdAt = Instant.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

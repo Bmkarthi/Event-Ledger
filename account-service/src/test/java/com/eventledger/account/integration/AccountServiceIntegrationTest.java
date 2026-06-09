@@ -14,9 +14,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Integration tests for the Account Service
- */
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AccountServiceIntegrationTest {
 
@@ -30,7 +28,6 @@ public class AccountServiceIntegrationTest {
     void testApplyTransactionAndBalance() {
         String accountId = "acct-balance-001";
 
-        // Apply credit transaction
         TransactionRequest creditRequest = new TransactionRequest(
             "CREDIT", new BigDecimal("500.00"), "USD", "evt-txn-001"
         );
@@ -40,7 +37,6 @@ public class AccountServiceIntegrationTest {
 
         assertEquals(HttpStatus.OK, creditResponse.getStatusCode());
 
-        // Check balance
         ResponseEntity<Map> balanceResponse = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 
@@ -55,25 +51,21 @@ public class AccountServiceIntegrationTest {
     void testMultipleTransactions() {
         String accountId = "acct-multi-001";
 
-        // CREDIT 100
         TransactionRequest credit1 = new TransactionRequest(
             "CREDIT", new BigDecimal("100.00"), "USD", "evt-multi-001"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", credit1, Map.class);
 
-        // CREDIT 50
         TransactionRequest credit2 = new TransactionRequest(
             "CREDIT", new BigDecimal("50.00"), "USD", "evt-multi-002"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", credit2, Map.class);
 
-        // DEBIT 30
         TransactionRequest debit = new TransactionRequest(
             "DEBIT", new BigDecimal("30.00"), "USD", "evt-multi-003"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", debit, Map.class);
 
-        // Balance should be 100 + 50 - 30 = 120
         ResponseEntity<Map> balanceResponse = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 
@@ -90,18 +82,15 @@ public class AccountServiceIntegrationTest {
             "CREDIT", new BigDecimal("100.00"), "USD", "evt-idem-txn-001"
         );
 
-        // First call
         ResponseEntity<?> response1 = restTemplate.postForEntity(
             "/accounts/" + accountId + "/transactions", request, Map.class);
 
-        // Second call with same idempotency key
         ResponseEntity<?> response2 = restTemplate.postForEntity(
             "/accounts/" + accountId + "/transactions", request, Map.class);
 
         assertEquals(HttpStatus.OK, response1.getStatusCode());
         assertEquals(HttpStatus.OK, response2.getStatusCode());
 
-        // Balance should only have been increased once
         ResponseEntity<Map> balanceResponse = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 
@@ -114,13 +103,11 @@ public class AccountServiceIntegrationTest {
     void testGetAccountDetails() {
         String accountId = "acct-details-001";
 
-        // Create account by applying transaction
         TransactionRequest request = new TransactionRequest(
             "CREDIT", new BigDecimal("250.00"), "USD", "evt-details-001"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", request, Map.class);
 
-        // Get account details
         ResponseEntity<Map> response = restTemplate.getForEntity(
             "/accounts/" + accountId, Map.class);
 
@@ -142,7 +129,6 @@ public class AccountServiceIntegrationTest {
 
     @Test
     void testNonExistentAccountBalance() {
-        // Non-existent account should return 0 balance
         ResponseEntity<Map> response = restTemplate.getForEntity(
             "/accounts/acct-nonexistent/balance", Map.class);
 
@@ -156,19 +142,16 @@ public class AccountServiceIntegrationTest {
     void testNegativeBalance() {
         String accountId = "acct-negative-001";
 
-        // Start with 100
         TransactionRequest credit = new TransactionRequest(
             "CREDIT", new BigDecimal("100.00"), "USD", "evt-neg-001"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", credit, Map.class);
 
-        // Debit 150 (goes negative)
         TransactionRequest debit = new TransactionRequest(
             "DEBIT", new BigDecimal("150.00"), "USD", "evt-neg-002"
         );
         restTemplate.postForEntity("/accounts/" + accountId + "/transactions", debit, Map.class);
 
-        // Should allow negative balance
         ResponseEntity<Map> response = restTemplate.getForEntity(
             "/accounts/" + accountId + "/balance", Map.class);
 

@@ -42,7 +42,6 @@ public class Event {
     @Column(nullable = false)
     private EventStatus status = EventStatus.PENDING;
 
-    // Constructors
     public Event() {
     }
 
@@ -58,7 +57,6 @@ public class Event {
         this.createdAt = Instant.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

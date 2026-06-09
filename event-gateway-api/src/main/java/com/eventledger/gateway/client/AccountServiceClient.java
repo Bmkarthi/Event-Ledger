@@ -43,6 +43,7 @@ public class AccountServiceClient {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String url = accountServiceUrl + "/accounts/" + accountId + "/transactions";
+                logger.info("Calling Account Service to apply transaction: {} [traceId={}]", url, traceId);
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("type", type);
@@ -59,6 +60,7 @@ public class AccountServiceClient {
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
                 restTemplate.postForObject(url, entity, String.class);
+                logger.info("Transaction applied successfully at Account Service [traceId={}]", traceId);
                 return "SUCCESS";
             } catch (RestClientException e) {
                 logger.error("Failed to apply transaction to Account Service [traceId={}]", traceId, e);
@@ -69,7 +71,7 @@ public class AccountServiceClient {
 
     public CompletableFuture<String> applyTransactionFallback(String accountId, String type, BigDecimal amount,
                                                                String currency, String idempotencyKey, String traceId, Exception ex) {
-        logger.warn("Circuit breaker fallback triggered for Account Service [traceId={}]: {}", traceId, ex.getMessage());
+        logger.warn("Circuit breaker activated for applyTransaction [traceId={}]: {}", traceId, ex.getMessage());
         return CompletableFuture.failedFuture(
             new AccountServiceUnavailableException("Account Service is currently unavailable", ex)
         );
@@ -87,10 +89,12 @@ public class AccountServiceClient {
                 headers.set("X-Trace-ID", traceId);
             }
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-            String response = resp.getBody();
-            Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
-            return new BigDecimal(responseMap.get("balance").toString());
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            String responseBody = response.getBody();
+            Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+            BigDecimal balance = new BigDecimal(responseMap.get("balance").toString());
+            logger.info("Balance retrieved successfully for account: {} [traceId={}]", accountId, traceId);
+            return balance;
         } catch (Exception e) {
             logger.error("Failed to get balance from Account Service [traceId={}]", traceId, e);
             throw new AccountServiceException("Failed to get balance", e);
@@ -98,7 +102,7 @@ public class AccountServiceClient {
     }
 
     public BigDecimal getBalanceFallback(String accountId, String traceId, Exception ex) {
-        logger.warn("Circuit breaker fallback triggered for getBalance [traceId={}]: {}", traceId, ex.getMessage());
+        logger.warn("Circuit breaker activated for getBalance [traceId={}]: {}", traceId, ex.getMessage());
         throw new AccountServiceUnavailableException("Account Service is currently unavailable", ex);
     }
 
@@ -122,4 +126,3 @@ public class AccountServiceClient {
         }
     }
 }
-

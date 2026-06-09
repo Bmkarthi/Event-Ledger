@@ -25,7 +25,6 @@ public class Account {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    // Constructors
     public Account() {
     }
 
@@ -36,7 +35,6 @@ public class Account {
         this.updatedAt = Instant.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -11,10 +11,10 @@ import java.util.Map;
 @Component
 public class StructuredLogger {
 
-    // Delay ObjectMapper creation until first use to avoid any static-init issues
     private static class ObjectMapperHolder {
         static final ObjectMapper INSTANCE = new ObjectMapper();
     }
+
     private static ObjectMapper getObjectMapper() {
         return ObjectMapperHolder.INSTANCE;
     }
@@ -37,7 +37,6 @@ public class StructuredLogger {
             System.out.println("{\"timestamp\":\"" + Instant.now() + "\",\"level\":\"ERROR\",\"message\":\"Failed to serialize log\"}");
         }
 
-        // Also set MDC for traditional logging (only if traceId is present)
         if (traceId != null) {
             MDC.put("traceId", traceId);
         }
